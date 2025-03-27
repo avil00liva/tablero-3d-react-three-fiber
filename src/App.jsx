@@ -1,6 +1,7 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
+import { SwitchProvider, useSwitch } from "../SwitchContext";
 
 function Tablero() {
   const groupRef = useRef();
@@ -21,9 +22,45 @@ function Tablero() {
   );
 }
 
-function InterruptorDiferencial({ position }) {
+/* function InterruptorDiferencial({ position }) {
   const { scene } = useGLTF("/src/assets/interruptor_diferencial.glb");
   return <primitive object={scene.clone()} position={position} scale={1.2} />;
+} */
+
+function InterruptorDiferencial({ position }) {
+  const { isOn, setIsOn } = useSwitch();
+  const { scene: offModel } = useGLTF(
+    "/src/assets/interruptor_diferencial.glb"
+  );
+  const { scene: onModel } = useGLTF(
+    "/src/assets/interruptor_diferencial_on.glb"
+  );
+  const modelRef = useRef();
+
+  /*   useEffect(() => {
+    if (modelRef.current) {
+      modelRef.current.clear(); // Elimina el modelo anterior
+      modelRef.current.add(isOn ? onModel.clone() : offModel.clone());
+    }
+  }, [isOn, onModel, offModel]); */
+
+  useEffect(() => {
+    if (modelRef.current) {
+      modelRef.current.clear(); // Elimina el modelo anterior
+      const newModel = isOn ? onModel.clone() : offModel.clone();
+      modelRef.current.add(newModel);
+    }
+  }, [isOn, onModel, offModel]);
+
+  return (
+    <group
+      ref={modelRef}
+      position={position}
+      scale={[1.2, 1.2, 1.2]}
+      onClick={() => setIsOn((prev) => !prev)}
+      style={{ cursor: "pointer" }}
+    />
+  );
 }
 
 function Magnetotermico({ position }) {
@@ -33,6 +70,7 @@ function Magnetotermico({ position }) {
 
 function Scene() {
   const groupRef = useRef();
+  const { isOn } = useSwitch();
 
   return (
     <Canvas camera={{ position: [0, 0, 1], fov: 50 }}>
@@ -46,7 +84,9 @@ function Scene() {
       />
       <group ref={groupRef}>
         <Tablero />
-        <InterruptorDiferencial position={[-3, 0, -4.5]} />
+        <InterruptorDiferencial
+          position={isOn ? [-3, 0, -4.5] : [-3, 0, -4.5]}
+        />
         <Magnetotermico position={[-1, 0, -4.5]} />
         <Magnetotermico position={[1, 0, -4.5]} />
         <Magnetotermico position={[3, 0, -4.5]} />
@@ -58,8 +98,10 @@ function Scene() {
 
 export default function App() {
   return (
-    <div className="bg-[#1a1a1a]" style={{ width: "100vw", height: "100vh" }}>
-      <Scene />
-    </div>
+    <SwitchProvider>
+      <div className="bg-[#1a1a1a]" style={{ width: "100vw", height: "100vh" }}>
+        <Scene />
+      </div>
+    </SwitchProvider>
   );
 }
