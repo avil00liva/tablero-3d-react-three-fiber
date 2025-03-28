@@ -15,17 +15,26 @@ function Tablero() {
   return (
     <group ref={groupRef}>
       <mesh position={[0, 0, -5]}>
-        <boxGeometry args={[10, 2.5, 0.5]} />
+        <boxGeometry args={[10, 1, 0.5]} />
         <meshStandardMaterial color="#2a2a2a" roughness={0.3} metalness={0.8} />
       </mesh>
     </group>
   );
 }
 
-/* function InterruptorDiferencial({ position }) {
-  const { scene } = useGLTF("/src/assets/interruptor_diferencial.glb");
-  return <primitive object={scene.clone()} position={position} scale={1.2} />;
-} */
+function InterruptorDiferencialOn({ position }) {
+  const { setIsOn } = useSwitch();
+  const { scene } = useGLTF("/src/assets/interruptor_diferencial_on.glb");
+  return (
+    <primitive
+      onClick={() => setIsOn((prevState) => !prevState)}
+      object={scene.clone()}
+      position={position}
+      rotation={[-0.02, 0.08, -0.005]}
+      scale={1.2}
+    />
+  );
+}
 
 function InterruptorDiferencial({ position }) {
   const { isOn, setIsOn } = useSwitch();
@@ -37,17 +46,10 @@ function InterruptorDiferencial({ position }) {
   );
   const modelRef = useRef();
 
-  /*   useEffect(() => {
-    if (modelRef.current) {
-      modelRef.current.clear(); // Elimina el modelo anterior
-      modelRef.current.add(isOn ? onModel.clone() : offModel.clone());
-    }
-  }, [isOn, onModel, offModel]); */
-
   useEffect(() => {
     if (modelRef.current) {
-      modelRef.current.clear(); // Elimina el modelo anterior
-      const newModel = isOn ? onModel.clone() : offModel.clone();
+      modelRef.current.clear();
+      const newModel = offModel.clone();
       modelRef.current.add(newModel);
     }
   }, [isOn, onModel, offModel]);
@@ -84,9 +86,12 @@ function Scene() {
       />
       <group ref={groupRef}>
         <Tablero />
-        <InterruptorDiferencial
-          position={isOn ? [-3, 0, -4.5] : [-3, 0, -4.5]}
-        />
+
+        {isOn ? (
+          <InterruptorDiferencialOn position={[-3, 0, -4.5]} />
+        ) : (
+          <InterruptorDiferencial position={[-3, 0, -4.5]} />
+        )}
         <Magnetotermico position={[-1, 0, -4.5]} />
         <Magnetotermico position={[1, 0, -4.5]} />
         <Magnetotermico position={[3, 0, -4.5]} />
@@ -97,11 +102,22 @@ function Scene() {
 }
 
 export default function App() {
+  const [show, setShow] = useState(false);
+
   return (
     <SwitchProvider>
-      <div className="bg-[#1a1a1a]" style={{ width: "100vw", height: "100vh" }}>
+      <section
+        className="bg-[#1a1a1a] py-8 relative overflow-y-hidden"
+        style={{ width: "100vw", height: "100vh" }}
+      >
+        <button className="bg-orange-700 text-black rounded-lg cursor-pointer ml-2 mt-2 px-4 py-3 font-bold transition-opacity hover:opacity-70">
+          Ver materiales
+        </button>
+        {
+          <div className="absolute top-4 left-0 min-w-52 h-[calc(100%-2rem)] rounded-2xl border-amber-500 border-2 bg-black z-50 -translate-x-full transition-transform duration-700"></div>
+        }
         <Scene />
-      </div>
+      </section>
     </SwitchProvider>
   );
 }
