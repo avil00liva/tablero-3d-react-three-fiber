@@ -2,13 +2,14 @@ import React, { useState, useRef, useEffect } from "react";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { OrbitControls, useGLTF } from "@react-three/drei";
 import { SwitchProvider, useSwitch } from "../SwitchContext";
+import Tablero from "./components/Tablero";
 
-function Tablero() {
+/* function Tablero() {
   const groupRef = useRef();
 
   useFrame(() => {
     if (groupRef.current) {
-      groupRef.current.rotation.y += 0; // Rotación controlada si se desea
+      groupRef.current.rotation.y += 0;
     }
   });
 
@@ -20,7 +21,7 @@ function Tablero() {
       </mesh>
     </group>
   );
-}
+} */
 
 function InterruptorDiferencialOn({ position }) {
   const { setIsOn } = useSwitch();
@@ -31,7 +32,7 @@ function InterruptorDiferencialOn({ position }) {
       object={scene.clone()}
       position={position}
       rotation={[-0.02, 0.08, -0.005]}
-      scale={1.2}
+      scale={[1.2, 1.2, 0.95]}
     />
   );
 }
@@ -58,7 +59,7 @@ function InterruptorDiferencial({ position }) {
     <group
       ref={modelRef}
       position={position}
-      scale={[1.2, 1.2, 1.2]}
+      scale={[1.2, 1.2, 1]}
       onClick={() => setIsOn((prev) => !prev)}
       style={{ cursor: "pointer" }}
     />
@@ -67,7 +68,13 @@ function InterruptorDiferencial({ position }) {
 
 function Magnetotermico({ position }) {
   const { scene } = useGLTF("/src/assets/magnetotermico.glb");
-  return <primitive object={scene.clone()} position={position} scale={1} />;
+  return (
+    <primitive
+      object={scene.clone()}
+      position={position}
+      scale={[1.2, 1.2, 0.5]}
+    />
+  );
 }
 
 function Scene() {
@@ -75,7 +82,7 @@ function Scene() {
   const { isOn } = useSwitch();
 
   return (
-    <Canvas camera={{ position: [0, 0, 1], fov: 50 }}>
+    <Canvas camera={{ position: [0, 0, 2], fov: 50 }}>
       <ambientLight intensity={0.5} />
       <directionalLight position={[10, 10, 10]} intensity={1} castShadow />
       <pointLight
@@ -84,6 +91,7 @@ function Scene() {
         color="#ff8303"
         distance={8}
       />
+
       <group ref={groupRef}>
         <Tablero />
 
@@ -104,17 +112,35 @@ function Scene() {
 export default function App() {
   const [show, setShow] = useState(false);
 
+  const showMenu = () => {
+    setShow((prevState) => !prevState);
+  };
+
   return (
     <SwitchProvider>
       <section
         className="bg-[#1a1a1a] py-8 relative overflow-y-hidden"
         style={{ width: "100vw", height: "100vh" }}
       >
-        <button className="bg-orange-700 text-black rounded-lg cursor-pointer ml-2 mt-2 px-4 py-3 font-bold transition-opacity hover:opacity-70">
+        <button
+          onClick={showMenu}
+          className="bg-orange-700 text-black rounded-lg cursor-pointer ml-2 mt-2 px-4 py-3 font-bold transition-opacity hover:opacity-70"
+        >
           Ver materiales
         </button>
         {
-          <div className="absolute top-4 left-0 min-w-52 h-[calc(100%-2rem)] rounded-2xl border-amber-500 border-2 bg-black z-50 -translate-x-full transition-transform duration-700"></div>
+          <div
+            className={`absolute top-4 left-0 min-w-52 h-[calc(100%-2rem)] rounded-2xl border-amber-500 border-2 p-2 bg-black z-50 ${
+              !show ? "-translate-x-full" : ""
+            } transition-transform duration-300 flex justify-center items-start`}
+          >
+            <button
+              onClick={showMenu}
+              className="bg-orange-700 text-black rounded-lg cursor-pointer px-4 py-3 font-bold transition-opacity hover:opacity-70"
+            >
+              Esconder menu
+            </button>
+          </div>
         }
         <Scene />
       </section>
