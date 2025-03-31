@@ -5,3 +5,11 @@
   padding: 0;
   box-sizing: border-box;
 }
+
+.draggable {
+  cursor: grab;
+}
+
+.draggable:active {
+  cursor: grabbing;
+}

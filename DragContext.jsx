@@ -15,6 +15,6 @@ export const DragProvider = ({ children }) => {
   );
 };
 
-export const useDrag = () => {
+export const useDragContext = () => {
   return useContext(DragContext);
 };
